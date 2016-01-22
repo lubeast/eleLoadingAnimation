@@ -7,8 +7,10 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -23,7 +25,7 @@ public class JumpingView extends View {
 
     public static final int FRAME_SIZE = 100;
 
-    SparseArray<Integer> mItems = new SparseArray<>();
+    SparseArray<Integer> mItems;
 
     ObjectAnimator animator;
 
@@ -52,6 +54,7 @@ public class JumpingView extends View {
     }
 
     private void init(Context context, AttributeSet attrs) {
+        Log.d("LoadingView", "init");
         TypedArray attr = context.obtainStyledAttributes(attrs, R.styleable.JumpingView, 0, 0);
         if (attr != null) {
             try {
@@ -60,12 +63,10 @@ public class JumpingView extends View {
                 attr.recycle();
             }
         }
-        animator = ObjectAnimator.ofFloat(this, "translationY", 0, -100, 0);
-        animator.addListener(animatorListener);
 
-        shadow = new View(context);
-        shadow.setBackgroundResource(R.drawable.loading_shadow);
-        shadow.layout(dp2px(55 / 2), dp2px(70), dp2px(72), dp2px(90));
+        mItems = new SparseArray<>();
+
+        animator = ObjectAnimator.ofFloat(this, "translationY", 0, -100, 0);
     }
 
     @Override
@@ -92,6 +93,8 @@ public class JumpingView extends View {
      * It will call this method if the animation is end, to update data and do animation again.
      */
     private void initAnimator() {
+
+
         animator.setDuration(mDuration * 2);
         animator.setInterpolator(new AccelerateInterpolator());
         animator.setRepeatCount(ObjectAnimator.INFINITE);
@@ -126,7 +129,9 @@ public class JumpingView extends View {
      * update position whenever an animation is end
      */
     private void updateResource() {
-        currentPosition = (currentPosition + 1) % mItems.size();
+        if (mItems.size() != 0) {
+            currentPosition = (currentPosition + 1) % mItems.size();
+        }
     }
 
     @Override
@@ -153,6 +158,7 @@ public class JumpingView extends View {
 
     /**
      * dp2px
+     *
      * @param dpValue dp
      * @return px
      */
@@ -162,12 +168,19 @@ public class JumpingView extends View {
 
     public void stopAnimation() {
         if (animator.isRunning()) {
+            Log.d("LoadingView", "jump stop");
             animator.end();
+            animator.removeListener(animatorListener);
         }
     }
 
     public void startAnimation() {
+        animator.addListener(animatorListener);
+        if (mItems.size() == 0) {
+            this.mItems = mItems;
+        }
         if (!animator.isRunning()) {
+            Log.d("LoadingView", "jump start");
             animator.start();
         }
     }
@@ -186,5 +199,10 @@ public class JumpingView extends View {
 
     public interface LoadingListener {
         void start();
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        return super.onSaveInstanceState();
     }
 }

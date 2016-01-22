@@ -3,7 +3,6 @@ package com.lumeng.jump_loading;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -15,9 +14,13 @@ import com.nineoldandroids.animation.ObjectAnimator;
  * @author lumeng on 1/21/16.
  */
 public class LoadingView extends FrameLayout implements JumpingView.LoadingListener {
-
+    /**
+     * Size of this view
+     */
     private static final int DEFAULT_SIZE = 100;
-
+    /**
+     * store the former state of this view
+     */
     private int lastVisibleStatus = INVISIBLE;
 
     JumpingView jumpingView;
@@ -37,17 +40,34 @@ public class LoadingView extends FrameLayout implements JumpingView.LoadingListe
     public LoadingView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
+        initShadow(context);
+        initJumpView(context, attrs);
+    }
+
+    /**
+     * add Shadow view
+     * @param context
+     */
+    private void initShadow(Context context) {
         view = new View(context);
         view.setBackgroundResource(R.drawable.loading_shadow);
-
         addView(view);
+    }
 
+    /**
+     * add jump view
+     * @param context context
+     * @param attrs attrs
+     */
+    private void initJumpView(Context context, AttributeSet attrs){
         jumpingView = new JumpingView(context, attrs);
         addView(jumpingView);
         jumpingView.addListener(this);
-
     }
 
+    /**
+     * shadow start animation with jump view
+     */
     private void startShadowAnimation() {
         animator = ObjectAnimator.ofFloat(view, "scaleX", 1, 1.5f, 1);
         animator.setInterpolator(new AccelerateInterpolator());
@@ -71,7 +91,7 @@ public class LoadingView extends FrameLayout implements JumpingView.LoadingListe
         jumpingView.stopAnimation();
     }
 
-    public void startAnimation(){
+    public void startAnimation() {
         jumpingView.startAnimation();
     }
 
@@ -105,4 +125,21 @@ public class LoadingView extends FrameLayout implements JumpingView.LoadingListe
         return result;
     }
 
+    @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+
+        if (lastVisibleStatus == INVISIBLE && visibility == VISIBLE) {
+            invalidate();
+            startShadowAnimation();
+            startAnimation();
+        }
+
+        if (lastVisibleStatus == VISIBLE && visibility == INVISIBLE) {
+            if (animator.isRunning()) {
+                animator.end();
+                stopAnimation();
+            }
+        }
+    }
 }

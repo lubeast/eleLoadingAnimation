@@ -1,6 +1,8 @@
 # eleLike
 
-This is a loading-animation when i saw an app called `eleme` in China.
+This is a loading-animation when i saw an app called `eleme`. So i did this `loading-animation`;
+
+Welcome to `star`.
 
 ### Preview
 

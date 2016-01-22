@@ -25,8 +25,6 @@ public class MainActivity extends AppCompatActivity {
         initRes();
 
         loadingView.setResource(array);
-
-
     }
 
     private void initRes() {
@@ -44,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         loadingView.stopAnimation();
-        array.clear();
         super.onStop();
     }
 
